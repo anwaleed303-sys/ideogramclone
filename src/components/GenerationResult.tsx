@@ -6,7 +6,6 @@ import {
   CardContent,
   Typography,
   Box,
-  Button,
   IconButton,
   Chip,
   Stack,
@@ -14,12 +13,9 @@ import {
   Skeleton,
 } from "@mui/material";
 import {
-  //   Copy,
   Download,
   Share,
-  CheckCircle,
   Create,
-  //   Template,
   Image as ImageIcon,
   Psychology,
 } from "@mui/icons-material";
@@ -48,22 +44,58 @@ export const GenerationResult: React.FC<GenerationResultProps> = ({
     }
   };
 
-  const handleDownload = () => {
+  // const handleDownload = () => {
+  //   if (result.type === "image" && result.imageUrl) {
+  //     const link = document.createElement("a");
+  //     link.href = result.imageUrl;
+  //     link.download = `generated-image-${result.id}.png`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //   } else {
+  //     const element = document.createElement("a");
+  //     const file = new Blob([result.content], { type: "text/plain" });
+  //     element.href = URL.createObjectURL(file);
+  //     element.download = `generated-${result.type}-${result.id}.txt`;
+  //     document.body.appendChild(element);
+  //     element.click();
+  //     document.body.removeChild(element);
+  //   }
+  // };
+  const handleDownload = async () => {
     if (result.type === "image" && result.imageUrl) {
-      const link = document.createElement("a");
-      link.href = result.imageUrl;
-      link.download = `generated-image-${result.id}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        // Fetch the image as a blob
+        const response = await fetch(result.imageUrl, { mode: "cors" });
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        // Create link and trigger download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `generated-image-${result.id}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up object URL
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Image download failed:", error);
+      }
     } else {
-      const element = document.createElement("a");
+      // Handle text content download
       const file = new Blob([result.content], { type: "text/plain" });
-      element.href = URL.createObjectURL(file);
+      const url = URL.createObjectURL(file);
+
+      const element = document.createElement("a");
+      element.href = url;
       element.download = `generated-${result.type}-${result.id}.txt`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+
+      URL.revokeObjectURL(url);
     }
   };
 
