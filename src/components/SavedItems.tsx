@@ -21,6 +21,7 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
+  Tooltip,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 
@@ -46,6 +47,8 @@ export const SavedItems: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clearAllDialogOpen, setClearAllDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<GeneratedItem | null>(null);
+  // Add state to track copied items
+  const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -80,9 +83,22 @@ export const SavedItems: React.FC = () => {
     setClearAllDialogOpen(false);
   };
 
-  const handleCopy = async (content: string) => {
+  // Updated handleCopy function
+  const handleCopy = async (content: string, itemId: string) => {
     try {
       await navigator.clipboard.writeText(content);
+
+      // Add item to copied set
+      setCopiedItems((prev) => new Set([...prev, itemId]));
+
+      // Remove from copied set after 2 seconds
+      setTimeout(() => {
+        setCopiedItems((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }, 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
@@ -330,13 +346,25 @@ export const SavedItems: React.FC = () => {
                   >
                     <Stack direction="row" spacing={1}>
                       {item.type !== "image" && (
-                        <IconButton
-                          size="small"
-                          onClick={() => handleCopy(item.content)}
-                          title="Copy content"
+                        <Tooltip
+                          title={
+                            copiedItems.has(item.id)
+                              ? "Copied!"
+                              : "Copy content"
+                          }
+                          arrow
+                          placement="top"
                         >
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleCopy(item.content, item.id)}
+                            color={
+                              copiedItems.has(item.id) ? "success" : "default"
+                            }
+                          >
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       )}
                       <IconButton
                         size="small"
