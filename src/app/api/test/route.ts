@@ -120,6 +120,12 @@ function generateImageUrl(
 
 export async function GET() {
   try {
+    console.log("DEBUG ENV", {
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+      NEXT_PUBLIC_OPENROUTER_API_KEY:
+        process.env.NEXT_PUBLIC_OPENROUTER_API_KEY,
+    });
     // Initialize OpenAI client
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY,
